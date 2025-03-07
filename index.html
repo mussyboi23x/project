@@ -1,21 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Simple 3D Game</title>
+<title>Simple 3D Game (Mobile Controls)</title>
 <style>
   body {
     margin: 0;
     overflow: hidden;
+    touch-action: none;
   }
   canvas {
     width: 100vw;
     height: 100vh;
     display: block;
   }
+  #controls {
+    position: absolute;
+    bottom: 10vh;
+    left: 5vw;
+    display: flex;
+    flex-wrap: wrap;
+    width: 90vw;
+    justify-content: center;
+  }
+  .control-button {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 3px;
+    border-radius: 50%;
+    user-select: none;
+  }
 </style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
+<div id="controls">
+    <div class="control-button" id="up">W</div>
+    <div class="control-button" id="down">S</div>
+    <div class="control-button" id="left">A</div>
+    <div class="control-button" id="right">D</div>
+    <div class="control-button" id="forward">Q</div>
+    <div class="control-button" id="backward">E</div>
+</div>
 
 <script>
   const canvas = document.getElementById('gameCanvas');
@@ -26,12 +56,9 @@
 
   let playerX = canvas.width / 2;
   let playerY = canvas.height / 2;
-  let playerZ = 0; // Simulate depth
+  let playerZ = 0;
   const playerSize = 20;
   const playerSpeed = 5;
-
-  let angleX = 0;
-  let angleY = 0;
 
   const cubeSize = 50;
   const cubeX = canvas.width / 2 + 100;
@@ -100,26 +127,38 @@
     requestAnimationFrame(update);
   }
 
+  const buttons = {
+    up: document.getElementById('up'),
+    down: document.getElementById('down'),
+    left: document.getElementById('left'),
+    right: document.getElementById('right'),
+    forward: document.getElementById('forward'),
+    backward: document.getElementById('backward'),
+  };
+
+  function handleButton(button, action) {
+    button.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      action();
+    });
+    button.addEventListener('mousedown', action);
+  }
+
+  handleButton(buttons.up, () => playerY -= playerSpeed);
+  handleButton(buttons.down, () => playerY += playerSpeed);
+  handleButton(buttons.left, () => playerX -= playerSpeed);
+  handleButton(buttons.right, () => playerX += playerSpeed);
+  handleButton(buttons.forward, () => playerZ -= playerSpeed);
+  handleButton(buttons.backward, () => playerZ += playerSpeed);
+
   document.addEventListener('keydown', (event) => {
     switch (event.key) {
-      case 'w':
-        playerY -= playerSpeed;
-        break;
-      case 's':
-        playerY += playerSpeed;
-        break;
-      case 'a':
-        playerX -= playerSpeed;
-        break;
-      case 'd':
-        playerX += playerSpeed;
-        break;
-      case 'q':
-        playerZ -= playerSpeed;
-        break;
-      case 'e':
-        playerZ += playerSpeed;
-        break;
+      case 'w': playerY -= playerSpeed; break;
+      case 's': playerY += playerSpeed; break;
+      case 'a': playerX -= playerSpeed; break;
+      case 'd': playerX += playerSpeed; break;
+      case 'q': playerZ -= playerSpeed; break;
+      case 'e': playerZ += playerSpeed; break;
     }
   });
 
