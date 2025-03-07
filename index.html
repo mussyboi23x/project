@@ -1,168 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Simple 3D Game (Mobile Controls)</title>
+<title>Simple Point-and-Click</title>
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    touch-action: none;
-  }
-  canvas {
-    width: 100vw;
-    height: 100vh;
-    display: block;
-  }
-  #controls {
-    position: absolute;
-    bottom: 10vh;
-    left: 5vw;
-    display: flex;
-    flex-wrap: wrap;
-    width: 90vw;
-    justify-content: center;
-  }
-  .control-button {
-    width: 40px;
-    height: 40px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 3px;
-    border-radius: 50%;
-    user-select: none;
+  #gameCanvas {
+    border: 1px solid black;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<div id="controls">
-    <div class="control-button" id="up">W</div>
-    <div class="control-button" id="down">S</div>
-    <div class="control-button" id="left">A</div>
-    <div class="control-button" id="right">D</div>
-    <div class="control-button" id="forward">Q</div>
-    <div class="control-button" id="backward">E</div>
-</div>
+
+<canvas id="gameCanvas" width="500" height="300"></canvas>
 
 <script>
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  let playerX = canvas.width / 2;
-  let playerY = canvas.height / 2;
-  let playerZ = 0;
+  let playerX = 50;
+  let playerY = 150;
   const playerSize = 20;
-  const playerSpeed = 5;
 
-  const cubeSize = 50;
-  const cubeX = canvas.width / 2 + 100;
-  const cubeY = canvas.height / 2;
-  let cubeZ = 100;
+  let targetX = 400;
+  let targetY = 150;
+  const targetSize = 30;
 
-  function project(x, y, z) {
-    const focalLength = 200;
-    const perspective = focalLength / (focalLength + z);
-    const projectedX = x * perspective + canvas.width / 2;
-    const projectedY = y * perspective + canvas.height / 2;
-    return { x: projectedX, y: projectedY, perspective: perspective };
-  }
-
-  function drawCube(x, y, z) {
-    const points = [
-      { x: x - cubeSize / 2, y: y - cubeSize / 2, z: z - cubeSize / 2 },
-      { x: x + cubeSize / 2, y: y - cubeSize / 2, z: z - cubeSize / 2 },
-      { x: x + cubeSize / 2, y: y + cubeSize / 2, z: z - cubeSize / 2 },
-      { x: x - cubeSize / 2, y: y + cubeSize / 2, z: z - cubeSize / 2 },
-      { x: x - cubeSize / 2, y: y - cubeSize / 2, z: z + cubeSize / 2 },
-      { x: x + cubeSize / 2, y: y - cubeSize / 2, z: z + cubeSize / 2 },
-      { x: x + cubeSize / 2, y: y + cubeSize / 2, z: z + cubeSize / 2 },
-      { x: x - cubeSize / 2, y: y + cubeSize / 2, z: z + cubeSize / 2 },
-    ];
-
-    const projectedPoints = points.map(point => project(point.x, point.y, point.z));
-
-    const faces = [
-      [0, 1, 2, 3],
-      [4, 5, 6, 7],
-      [0, 4, 7, 3],
-      [1, 5, 6, 2],
-      [0, 1, 5, 4],
-      [3, 2, 6, 7],
-    ];
-
-    faces.forEach(face => {
-      ctx.beginPath();
-      ctx.moveTo(projectedPoints[face[0]].x, projectedPoints[face[0]].y);
-      for (let i = 1; i < face.length; i++) {
-        ctx.lineTo(projectedPoints[face[i]].x, projectedPoints[face[i]].y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = 'gray';
-      ctx.fill();
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
-
-    });
-
-  }
+  let message = "";
+  let messageTimer = 0;
 
   function drawPlayer() {
-    const projectedPlayer = project(playerX, playerY, playerZ);
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(playerX, playerY, playerSize, playerSize);
+  }
+
+  function drawTarget() {
     ctx.fillStyle = 'red';
-    ctx.fillRect(projectedPlayer.x - playerSize / 2, projectedPlayer.y - playerSize / 2, playerSize, playerSize);
+    ctx.fillRect(targetX, targetY, targetSize, targetSize);
   }
 
-  function update() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawPlayer();
-    drawCube(cubeX, cubeY, cubeZ);
-
-    requestAnimationFrame(update);
-  }
-
-  const buttons = {
-    up: document.getElementById('up'),
-    down: document.getElementById('down'),
-    left: document.getElementById('left'),
-    right: document.getElementById('right'),
-    forward: document.getElementById('forward'),
-    backward: document.getElementById('backward'),
-  };
-
-  function handleButton(button, action) {
-    button.addEventListener('touchstart', (event) => {
-      event.preventDefault();
-      action();
-    });
-    button.addEventListener('mousedown', action);
-  }
-
-  handleButton(buttons.up, () => playerY -= playerSpeed);
-  handleButton(buttons.down, () => playerY += playerSpeed);
-  handleButton(buttons.left, () => playerX -= playerSpeed);
-  handleButton(buttons.right, () => playerX += playerSpeed);
-  handleButton(buttons.forward, () => playerZ -= playerSpeed);
-  handleButton(buttons.backward, () => playerZ += playerSpeed);
-
-  document.addEventListener('keydown', (event) => {
-    switch (event.key) {
-      case 'w': playerY -= playerSpeed; break;
-      case 's': playerY += playerSpeed; break;
-      case 'a': playerX -= playerSpeed; break;
-      case 'd': playerX += playerSpeed; break;
-      case 'q': playerZ -= playerSpeed; break;
-      case 'e': playerZ += playerSpeed; break;
+  function drawMessage() {
+    if (messageTimer > 0) {
+      ctx.fillStyle = 'black';
+      ctx.font = '20px Arial';
+      ctx.fillText(message, 10, 30);
+      messageTimer--;
     }
-  });
+  }
 
-  update();
+  function checkCollision(x1, y1, size1, x2, y2, size2) {
+    return x1 < x2 + size2 &&
+           x1 + size1 > x2 &&
+           y1 < y2 + size2 &&
+           y1 + size1 > y2;
+  }
+
+  function handleCanvasClick(event) {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+
+    if (checkCollision(clickX, clickY, 1, targetX, targetY, targetSize)) {
+      message = "You clicked the target!";
+      messageTimer = 100;
+      targetX = Math.random() * (canvas.width - targetSize);
+      targetY = Math.random() * (canvas.height - targetSize);
+
+    } else {
+      playerX = clickX - playerSize / 2;
+      playerY = clickY - playerSize / 2;
+    }
+  }
+
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+    drawTarget();
+    drawMessage();
+    requestAnimationFrame(gameLoop);
+  }
+
+  canvas.addEventListener('click', handleCanvasClick);
+  gameLoop();
 </script>
+
 </body>
 </html>
